@@ -22,20 +22,34 @@ var jwtSecret = builder.Configuration["TokenSettings:Secret"]
     ?? "940e7459e7860742e9a9495da3c64e9065d703a6efc8c56394c9c013995affe0";
 var key = Encoding.UTF8.GetBytes(jwtSecret);
 
-builder.Services.AddAuthentication(options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("FAILED: " + context.Exception.Message);
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("VALIDATED");
+            return Task.CompletedTask;
+        }
+    };
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidIssuer = "MovieAPI",
+
+        ValidateAudience = true,
+        ValidAudience = "MovieClient",
+
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        ValidateIssuerSigningKey = false,
+        
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.FromMinutes(5)
     };
