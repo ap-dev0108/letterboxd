@@ -1,0 +1,58 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Movie.Application.DTO.UserDTO;
+using Movie.Application.Interface.RepoInterface.UserRepo;
+using Movie.Domain.Entities;
+using Movie.Infrastructure.Database;
+
+namespace Movie.Infrastructure.Repository.UserRepo;
+
+public class UserRepo : IUserRepo
+{
+    private readonly ApplicationDb _db;
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager; 
+
+    public UserRepo(ApplicationDb db, UserManager<User> userManager, SignInManager<User> signInManager)
+    {
+        _db = db;
+        _userManager = userManager;
+        _signInManager = signInManager; 
+    }
+
+    public async Task<List<User>> GetAllUserAsync()
+    {
+        return await _db.Users.ToListAsync();
+    }
+
+    public async Task<User> GetUserById(string id)
+    {
+        return await _db.Users.FirstOrDefaultAsync(f => f.Id == id);
+    }
+
+    public async Task<IdentityResult> RegisterAsync(User user, string password)
+    {
+        var registerUser = await _userManager.CreateAsync(user, password);
+        return registerUser;
+    }
+
+    public async Task LoginAsync(User user, string password)
+    {
+        await _signInManager.CheckPasswordSignInAsync(user, password, false);
+    }
+
+    public async Task<User> CheckUserExists(string email)
+    {
+        try
+        {
+            var userExists = await _userManager.FindByEmailAsync(email);
+            if (userExists == null) return null;
+
+            return userExists;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+}
