@@ -137,4 +137,25 @@ public class UserService : IUserInterface
         }
     }
 
+    public async Task<UserDTO> DeleteUser(string userID)
+    {
+        try
+        {
+            var checkUser = await _userRepo.GetUserById(userID);
+
+            if (checkUser == null) return null;
+
+            var user = _userRepo.DeleteUser(checkUser);
+            var userDTO = new UserDTO
+            {
+                UserName = checkUser.UserName
+            };
+
+            return userDTO;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
 }
