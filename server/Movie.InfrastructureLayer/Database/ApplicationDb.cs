@@ -12,4 +12,5 @@ public class ApplicationDb : IdentityDbContext<User>
     }
     public DbSet<Film> Films {get; set;}
     public DbSet<Genre> Genres {get; set;}
+    public DbSet<Ratings> Ratings {get; set;}
 }
