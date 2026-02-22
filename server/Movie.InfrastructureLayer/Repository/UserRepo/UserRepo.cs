@@ -55,4 +55,10 @@ public class UserRepo : IUserRepo
             throw new Exception(ex.Message);
         }
     }
+
+    public async Task DeleteUser(User user)
+    {
+        _db.Users.Remove(user);
+        _db.SaveChanges();
+    }
 }
