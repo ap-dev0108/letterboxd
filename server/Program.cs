@@ -45,11 +45,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidIssuer = "MovieAPI",
 
         ValidateAudience = true,
-        ValidAudience = "MovieClient",
+        ValidAudience = "MovieAPI",
 
         ValidateLifetime = true,
         ValidateIssuerSigningKey = false,
-        
+
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.FromMinutes(5)
     };
@@ -95,8 +95,11 @@ builder.Services.AddDbContext<ApplicationDb>(options =>
 });
 
 // Adding Identity to the container
-builder.Services.AddIdentity<User, IdentityRole>(options => 
-    options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddIdentityCore<User>(options => 
+    options.SignIn.RequireConfirmedAccount = false
+    )
+    .AddRoles<IdentityRole>()
+    .AddSignInManager()
     .AddEntityFrameworkStores<ApplicationDb>()
     .AddDefaultTokenProviders();
 
