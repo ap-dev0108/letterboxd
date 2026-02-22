@@ -11,4 +11,5 @@ public interface IUserInterface
     Task<string> LoginUserAsync(LoginDTO loginDTO);
     Task<User> CheckUserExists(string email);
     Task<UserDTO> UserProfile(string Id);
+    Task<UserDTO> DeleteUser(string id);
 }
