@@ -150,15 +150,16 @@ public class UserController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("user-profile")]
     public async Task<APIResponse<UserDTO>> VerifyUser()
     {
         try
         {
-            // "sub" maps to ClaimTypes.NameIdentifier by default
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
                 ?? User.FindFirstValue("sub");
 
+            Console.WriteLine($"User ID: {userId}");
             if (string.IsNullOrEmpty(userId))
             {
                 return new ()
@@ -191,6 +192,33 @@ public class UserController : ControllerBase
             {
                 Success = false,
                 Message = $"System Exception: {ex.Message}"
+            };
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("delete-user")]
+    public async Task<APIResponse<UserDTO>> DeleteUser(string userID)
+    {
+        try
+        {
+            var users = await _userServices.DeleteUser(userID);
+
+            return new ()
+            {
+                Success = true,
+                Message = "User has been deleted",
+                Data = users
+            };
+
+        }
+        catch (Exception ex)
+        {
+            return new ()
+            {
+                Success = false,
+                Message = $"Controller Thrown Exception: {ex.Message}",
+                Data = null
             };
         }
     }
