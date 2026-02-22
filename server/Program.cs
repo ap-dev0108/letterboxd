@@ -95,9 +95,13 @@ builder.Services.AddDbContext<ApplicationDb>(options =>
 });
 
 // Adding Identity to the container
-builder.Services.AddIdentityCore<User>(options => 
-    options.SignIn.RequireConfirmedAccount = false
-    )
+builder.Services.AddIdentityCore<User>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+    })
     .AddRoles<IdentityRole>()
     .AddSignInManager()
     .AddEntityFrameworkStores<ApplicationDb>()
