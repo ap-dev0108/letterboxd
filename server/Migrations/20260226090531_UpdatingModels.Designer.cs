@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.Infrastructure.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace server.Migrations
 {
     [DbContext(typeof(ApplicationDb))]
-    partial class ApplicationDbModelSnapshot : ModelSnapshot
+    [Migration("20260226090531_UpdatingModels")]
+    partial class UpdatingModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,15 +254,7 @@ namespace server.Migrations
                     b.Property<float>("RatingScore")
                         .HasColumnType("real");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId1")
-                        .HasColumnType("text");
-
                     b.HasKey("RatingId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Ratings");
                 });
@@ -410,18 +405,6 @@ namespace server.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Movie.Domain.Entities.Ratings", b =>
-                {
-                    b.HasOne("Movie.Domain.Entities.User", null)
-                        .WithMany("UserRatings")
-                        .HasForeignKey("UserId1");
-                });
-
-            modelBuilder.Entity("Movie.Domain.Entities.User", b =>
-                {
-                    b.Navigation("UserRatings");
                 });
 #pragma warning restore 612, 618
         }

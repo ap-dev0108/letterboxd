@@ -6,7 +6,7 @@ public class FilmDataDTO
 {
     public FilmDisplayDTO filmOverview {get; set;}
     public string? filmDescription {get; set;}
-    public string? runTime {get; set;}
+    public string runTime {get; set;}
     public string? releaseYear {get; set;}
     public ICollection<Genre> genres {get; set;}
 }

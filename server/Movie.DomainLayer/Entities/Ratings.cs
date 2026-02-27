@@ -11,9 +11,12 @@ public class Ratings
     [Required]
     [Range(1,5)]
     public float RatingScore {get;set;}
-    public DateTime CreatedAt {get; set;} = DateTime.Now;
+    public DateTime CreatedAt {get; set;} = DateTime.UtcNow;
 
     [Required]
     public Guid MovieId {get; set;}
-    public Film MovieRated {get; set;}
+    public ICollection<Film>? Films {get; set;} = [];
+
+    [Required]
+    public Guid UserId {get; set;}
 }

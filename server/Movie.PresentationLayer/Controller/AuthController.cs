@@ -5,6 +5,8 @@ using Movie.Domain.Entities;
 
 namespace Movie.Presentation.Controller.AuthController;
 
+[ApiController]
+[Route("[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly UserService _userService;

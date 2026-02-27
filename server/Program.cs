@@ -9,6 +9,7 @@ using Movie.Domain.Entities.Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Movie.Presentation.Middleware.Global;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,6 +130,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<GlobalException>();
 
 app.UseAuthentication();
 app.UseAuthorization();

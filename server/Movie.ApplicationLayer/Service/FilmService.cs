@@ -1,4 +1,5 @@
 using System.Linq;
+using Movie.Application.DTO.AddFilm;
 using Movie.Application.DTO.FilmDTO;
 using Movie.Application.Interface.FilmInterface;
 using Movie.Domain.Entities;
@@ -15,16 +16,23 @@ public class FilmService : IFilmInterface
         _filmRepo = filmRepo;
     }
 
-    public async Task<List<FilmDisplayDTO>> GetFilmsAsync()
+    public async Task<List<AddFilmDTO>> GetFilmsAsync()
     {
         try
         {
-            var getFilms = await _filmRepo.GetFilmsAsync();
+            var getFilms = await _filmRepo.GetFilmsAsync() ?? 
+                throw new KeyNotFoundException("Films are null");
             
-            var filmDTO = getFilms.Select(f => new FilmDisplayDTO
+            var filmDTO = getFilms.Select(f => new AddFilmDTO
             {
                 movieId = f.movieId,
-                movieName = f.movieTitle
+                movieTitle = f.movieTitle,
+                movieDescription = f.movieDescription,
+                posterUrl = f.posterUrl,
+                releaseYear = f.releaseYear,
+                runTime = f.runTime,
+                AverageRatings = f.AverageRatings,
+                TotalRatings = f.TotalRatings
             }).ToList();
 
             return filmDTO;
@@ -67,53 +75,70 @@ public class FilmService : IFilmInterface
         }
     }
 
-    public async Task<FilmDataDTO> ShowMovieDetails(Film movieData)
+    public async Task<Film> ShowMovieDetails(Guid movieId)
     {
         try
         {
-            var checkMovie = await _filmRepo.GetFilmById(movieData.movieId);
-            if (checkMovie == null) return null;
+            var checkMovie = await _filmRepo.GetFilmById(movieId);
+            if (checkMovie == null) throw new Exception("Cannot find the matching movie ID");
 
-            var movieDTO = new FilmDataDTO
+            var movie = new Film
             {
-                filmOverview = new FilmDisplayDTO
-                {
-                    movieId = checkMovie.movieId,
-                    movieName = checkMovie.movieTitle,
-                    posterURL = checkMovie.posterUrl
-                },
-                filmDescription = checkMovie.movieDescription,
-                runTime = checkMovie.runTime,
+                movieId = checkMovie.movieId,
+                movieTitle = checkMovie.movieTitle,
+                movieDescription = checkMovie.movieDescription,
                 releaseYear = checkMovie.releaseYear,
-                genres = checkMovie.MovieGenre
+                runTime = checkMovie.runTime,
+                posterUrl = checkMovie.posterUrl,
+                AverageRatings = checkMovie.AverageRatings,
+                TotalRatings = checkMovie.TotalRatings,
+                MovieGenre = checkMovie.MovieGenre,
+                MovieRatings = checkMovie.MovieRatings
             };
 
-            return movieDTO;
+            return movie;
         }
         catch (Exception ex)
         {
             throw new Exception(ex.Message);
         }
     }
-    public async Task<Film> AddMovieDetails(Film movie)
+    public async Task<Film> AddMovieDetails(AddFilmDTO movie)
     {
         try
         {
             var fetchMovieTitle = await _filmRepo.GetFilmByTitle(movie.movieTitle);
-            if (fetchMovieTitle != null) return null;
 
-            var addMovies = new Film
+            var addMovie = new Film
             {
                 movieTitle = movie.movieTitle,
                 movieDescription = movie.movieDescription,
                 posterUrl = movie.posterUrl,
-                MovieGenre = movie.MovieGenre,
                 releaseYear = movie.releaseYear,
-                runTime = movie.runTime
+                runTime = movie.runTime,
+                AverageRatings = movie.AverageRatings,
+                TotalRatings = movie.TotalRatings
             };
 
-            return addMovies;   
+            var movies = await _filmRepo.AddMovieDetails(addMovie);
+            return movies;
         } 
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public async Task<int> GetTotalRatings(Guid movieId)
+    {
+        try
+        {
+            var getMovie = await _filmRepo.GetFilmById(movieId);
+            if (getMovie == null) return 0;
+
+            var getTotalRatings = await _filmRepo.GetRatingsCount(movieId);
+            return getTotalRatings;
+        }
         catch (Exception ex)
         {
             throw new Exception(ex.Message);

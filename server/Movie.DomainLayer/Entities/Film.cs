@@ -12,7 +12,7 @@ public class Film
     [Required]
     public string releaseYear {get; set;}
     [Required]
-    public int runTime {get; set;}
+    public string runTime {get; set;}
     [Required]
     public string? posterUrl {get; set;}
     [Required]

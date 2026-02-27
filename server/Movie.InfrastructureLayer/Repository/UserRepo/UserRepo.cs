@@ -61,4 +61,9 @@ public class UserRepo : IUserRepo
         _db.Users.Remove(user);
         _db.SaveChanges();
     }
+
+    public Task VerifyUser(User user)
+    {
+        throw new NotImplementedException();
+    }
 }

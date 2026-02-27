@@ -1,11 +1,14 @@
 using Movie.Application.Interface.FilmInterface;
 using Movie.Application.Interface.FilmInterface.GenreInterface;
+using Movie.Application.Interface.RatingInterface;
 using Movie.Application.Interface.TokenInterface;
 using Movie.Application.Interface.UserInterface;
 using Movie.Application.Service;
 using Movie.Application.Service.GenreService;
+using Movie.Application.Service.RatingService;
 using Movie.Application.Service.TokenService;
 using Movie.Application.Service.UserService;
+using Movie.Domain.Entities;
 using Movie.Domain.Entities.Token;
 
 namespace Movie.Application.DI.Services;
@@ -26,6 +29,9 @@ public static class ServiceDI
 
         services.AddScoped<IUserInterface, UserService>();
         services.AddScoped<UserService>();
+
+        services.AddScoped<IRatingInterface, RatingService>();
+        services.AddScoped<RatingService>();
         return services;
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.Infrastructure.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace server.Migrations
 {
     [DbContext(typeof(ApplicationDb))]
-    partial class ApplicationDbModelSnapshot : ModelSnapshot
+    [Migration("20260224104010_UpdatingFilm")]
+    partial class UpdatingFilm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,21 +38,6 @@ namespace server.Migrations
                     b.HasIndex("MovieGenreGenreId");
 
                     b.ToTable("FilmGenre");
-                });
-
-            modelBuilder.Entity("FilmRatings", b =>
-                {
-                    b.Property<Guid>("FilmsmovieId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MovieRatingsRatingId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("FilmsmovieId", "MovieRatingsRatingId");
-
-                    b.HasIndex("MovieRatingsRatingId");
-
-                    b.ToTable("FilmRatings");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -248,18 +236,15 @@ namespace server.Migrations
                     b.Property<Guid>("MovieId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("MovieRatedmovieId")
+                        .HasColumnType("uuid");
+
                     b.Property<float>("RatingScore")
                         .HasColumnType("real");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId1")
-                        .HasColumnType("text");
-
                     b.HasKey("RatingId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("MovieRatedmovieId");
 
                     b.ToTable("Ratings");
                 });
@@ -346,21 +331,6 @@ namespace server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FilmRatings", b =>
-                {
-                    b.HasOne("Movie.Domain.Entities.Film", null)
-                        .WithMany()
-                        .HasForeignKey("FilmsmovieId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Movie.Domain.Entities.Ratings", null)
-                        .WithMany()
-                        .HasForeignKey("MovieRatingsRatingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -414,14 +384,18 @@ namespace server.Migrations
 
             modelBuilder.Entity("Movie.Domain.Entities.Ratings", b =>
                 {
-                    b.HasOne("Movie.Domain.Entities.User", null)
-                        .WithMany("UserRatings")
-                        .HasForeignKey("UserId1");
+                    b.HasOne("Movie.Domain.Entities.Film", "MovieRated")
+                        .WithMany("MovieRatings")
+                        .HasForeignKey("MovieRatedmovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MovieRated");
                 });
 
-            modelBuilder.Entity("Movie.Domain.Entities.User", b =>
+            modelBuilder.Entity("Movie.Domain.Entities.Film", b =>
                 {
-                    b.Navigation("UserRatings");
+                    b.Navigation("MovieRatings");
                 });
 #pragma warning restore 612, 618
         }

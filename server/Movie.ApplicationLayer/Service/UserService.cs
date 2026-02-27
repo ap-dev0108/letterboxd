@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Movie.Application.DTO.UserDTO;
@@ -26,66 +27,34 @@ public class UserService : IUserInterface
 
     public async Task<List<User>> GetAllUserAsync()
     {
-        try
-        {
-            var getUsers = await _userRepo.GetAllUserAsync();
-            return getUsers;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
+        var getUsers = await _userRepo.GetAllUserAsync() ??
+            throw new KeyNotFoundException("User value is null");
+
+        return getUsers;
     }
 
     public async Task<User> GetUserById(string userId)
     {
-        try
-        {
-            var getUsers = await _userRepo.GetUserById(userId);
-            if (getUsers == null) return null;
+        var getUsers = await _userRepo.GetUserById(userId) ?? 
+            throw new KeyNotFoundException("User with this ID not found");
 
-            return getUsers;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
-    }
-
-    public async Task<User> CheckUserExists(string email)
-    {
-        try
-        {
-            var userExists = await _userManager.FindByEmailAsync(email);
-            if (userExists == null) return null;
-
-            return userExists;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
+        return getUsers;
     }
     public async Task<IdentityResult> RegisterUserAsync(User user, string password)
     {
         try
         {
-            var checkUserExists = await _userRepo.CheckUserExists(user.Email);
-
-            if (checkUserExists != null) return IdentityResult.Failed(
-                new IdentityError
-                {
-                    Description = "User already exists"
-                }
-            );
+            var checkUserExists = await _userManager.GetEmailAsync(user) ?? 
+                throw new KeyNotFoundException("User with this mail cannot be found");
 
             var registerUser = await _userRepo.RegisterAsync(user, password);
 
-            if(registerUser.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(user, "User");
-            }
+            if(!registerUser.Succeeded) 
+                throw new UnauthorizedAccessException("Invalid form of email or password");
+
+            await _userManager.AddToRoleAsync(user, "User");
             await _token.GenerateToken(user);
+            
             return registerUser;
         }
         catch (Exception ex)
@@ -98,12 +67,13 @@ public class UserService : IUserInterface
         try
         {
             // check if mail exists
-            var user = await _userManager.FindByEmailAsync(loginDTO.usermail) ?? throw new Exception("User with this mail cannot be found");
+            var user = await _userManager.FindByEmailAsync(loginDTO.usermail) ?? 
+                throw new UnauthorizedAccessException("User with this mail cannot be found");
 
             var checkPassword = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.userpassword, false);
-            if(checkPassword.IsLockedOut) throw new Exception("User is locked out");
-            if(checkPassword.IsNotAllowed) throw new Exception("User Email is not verified");
-            if (!checkPassword.Succeeded) throw new Exception("Passwords Don't match");
+
+            if(!checkPassword.Succeeded) 
+                throw new UnauthorizedAccessException("Invalid email or password");
 
             return await _token.GenerateToken(user);
         }
@@ -118,12 +88,11 @@ public class UserService : IUserInterface
     {
         try
         {
-            if (string.IsNullOrEmpty(userId))
-                return null;
+            // if (string.IsNullOrEmpty(userId))
+            //     throw new KeyNotFoundException("User with this ID cannot be found");
 
-            var userData = await _userRepo.GetUserById(userId);
-            if (userData == null)
-                return null;
+            var userData = await _userRepo.GetUserById(userId) ?? 
+                throw new KeyNotFoundException("User with this ID cannot be found");
 
             return new UserDTO
             {
@@ -141,9 +110,8 @@ public class UserService : IUserInterface
     {
         try
         {
-            var checkUser = await _userRepo.GetUserById(userID);
-
-            if (checkUser == null) return null;
+            var checkUser = await _userRepo.GetUserById(userID) ??
+                throw new KeyNotFoundException("User with this ID cannot be found");
 
             var user = _userRepo.DeleteUser(checkUser);
             var userDTO = new UserDTO

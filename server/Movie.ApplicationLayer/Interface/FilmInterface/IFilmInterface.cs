@@ -1,3 +1,4 @@
+using Movie.Application.DTO.AddFilm;
 using Movie.Application.DTO.FilmDTO;
 using Movie.Domain.Entities;
 
@@ -5,9 +6,10 @@ namespace Movie.Application.Interface.FilmInterface;
 
 public interface IFilmInterface
 {
-    Task<List<FilmDisplayDTO>> GetFilmsAsync();
+    Task<List<AddFilmDTO>> GetFilmsAsync();
     Task<Film> FilterByGenre(Genre genre);
     Task<Film> FilterByReleaseYear(string year);
-    Task<FilmDataDTO> ShowMovieDetails(Film film);
-    Task<Film> AddMovieDetails(Film film);
+    Task<Film> ShowMovieDetails(Guid movieId);
+    Task<Film> AddMovieDetails(AddFilmDTO filmDTO);
+    Task<int> GetTotalRatings(Guid movieId);
 }

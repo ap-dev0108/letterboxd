@@ -24,202 +24,94 @@ public class UserController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpGet("/getAllUsers")]
-    public async Task<APIResponse<List<User>>> GetAllUsers()
+    public async Task<IActionResult> GetAllUsers()
     {
-        try
+        if (User.IsInRole("User"))
         {
-            if (User.IsInRole("User"))
-            {
-                return new ()
-                {
-                    Success = false,
-                    Message = "You are not allowed to use this method"  
-                };
-            }
-            var getUsers = await _userServices.GetAllUserAsync();
-            if (getUsers.Count == 0) return new ()
-            {
-                Success = true,
-                Message = "No Content Found",
-                Data = null
-            };
-
-            return new ()
-            {
-                Success = true,
-                Message = "Users fetched Successfully",
-                Data = getUsers
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ()
+            return Unauthorized(new 
             {
                 Success = false,
-                Message = ex.Message,
-                Data = null
-            };
+                Message = "You are not allowed to use this method"  
+            });
         }
+        var getUsers = await _userServices.GetAllUserAsync();
+        if (!getUsers.Any()) return NoContent();
+
+        return Ok(new APIResponse<List<User>>
+        {
+            Success = true,
+            Message = "Users fetched Successfully",
+            Data = getUsers
+        });
     }
 
     [AllowAnonymous]
     [HttpPost("/register")]
-    public async Task<APIResponse<UserDTO>> AddUser([FromBody] UserDTO userDTO)
+    public async Task<IActionResult> AddUser([FromBody] UserDTO userDTO)
     {
-        try
+        var user = new User
         {
-            var existingUser = await _userServices.CheckUserExists(userDTO.Email);
+            UserName = userDTO.UserName,
+            Email = userDTO.Email
+        };
 
-            if(existingUser != null) return new ()
-            {
-                Success = false,
-                Message = "User Already Exists",
-                Data = new UserDTO
-                {
-                    UserName = existingUser.UserName
-                }
-            };
+        await _userServices.RegisterUserAsync(user, userDTO.UserPass);
 
-            var user = new User
-            {
-                UserName = userDTO.UserName,
-                Email = userDTO.Email
-            };
-
-            var addUser = await _userServices.RegisterUserAsync(user, userDTO.UserPass);
-
-            if(!addUser.Succeeded) return new ()
-            {
-                Success = false,
-                Message = "Cannot register User",
-                Data = null
-            };
-
-            return new ()
-            {
-                Success = true,
-                Message = "User Registered",
-                Data = new UserDTO
-                {
-                    UserName = user.UserName
-                }
-            };
-        }
-        catch (Exception ex)
+        return Ok(new APIResponse<UserDTO>
         {
-            return new ()
+            Success = true,
+            Message = "User Registered",
+            Data = new UserDTO
             {
-                Success = false,
-                Message = $"Exception: {ex.Message}",
-                Data = null
-            };
-        }
+                UserName = user.UserName
+            }
+        });
     }
 
     [AllowAnonymous]
     [HttpPost("/login")]
-    public async Task<APIResponse<string>> LoginUser([FromBody] LoginDTO loginDTO)
+    public async Task<IActionResult> LoginUser([FromBody] LoginDTO loginDTO)
     {
-        try
+        var loginUser = await _userServices.LoginUserAsync(loginDTO);
+        
+        return Ok(new APIResponse<string>
         {
-            var checkUserExists = await _userServices.CheckUserExists(loginDTO.usermail);
-            if(checkUserExists == null) return new()
-            {
-                Success = false,
-                Message = "Email not found",
-                Data = null  
-            };
-
-            var loginUser = await _userServices.LoginUserAsync(loginDTO);
-            
-            return new ()
-            {
-                Success = true,
-                Message = "Login Success",
-                Data = loginUser
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ()
-            {
-                Success = false,
-                Message = ex.Message,
-                Data = null
-            };
-        }
+            Success = true,
+            Message = "Login Success",
+            Data = loginUser
+        });
     }
 
     [Authorize]
     [HttpGet("user-profile")]
-    public async Task<APIResponse<UserDTO>> VerifyUser()
+    public async Task<IActionResult> VerifyUser()
     {
-        try
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+
+        var profile = await _userServices.UserProfile(userId);
+
+        if(profile == null) return NoContent();
+
+        return Ok(new APIResponse<UserDTO>
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User.FindFirstValue("sub");
-
-            Console.WriteLine($"User ID: {userId}");
-            if (string.IsNullOrEmpty(userId))
-            {
-                return new ()
-                {
-                    Success = false,
-                    Message = "Invalid or missing token. Please login again.",
-                    Data = null
-                };
-            }
-
-            var profile = await _userServices.UserProfile(userId);
-
-            if(profile == null) return new ()
-            {
-                Success = false,
-                Message = "User profile not found",
-                Data = null
-            };
-
-            return new()
-            {
-                Success = true,
-                Message = "Got your profile",
-                Data = profile
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ()
-            {
-                Success = false,
-                Message = $"System Exception: {ex.Message}"
-            };
-        }
+            Success = true,
+            Message = "Got your profile",
+            Data = profile
+        });
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("delete-user")]
-    public async Task<APIResponse<UserDTO>> DeleteUser(string userID)
+    public async Task<IActionResult> DeleteUser(string userID)
     {
-        try
-        {
-            var users = await _userServices.DeleteUser(userID);
+        var users = await _userServices.DeleteUser(userID);
 
-            return new ()
-            {
-                Success = true,
-                Message = "User has been deleted",
-                Data = users
-            };
-
-        }
-        catch (Exception ex)
+        return Ok(new APIResponse<UserDTO>
         {
-            return new ()
-            {
-                Success = false,
-                Message = $"Controller Thrown Exception: {ex.Message}",
-                Data = null
-            };
-        }
+            Success = true,
+            Message = "User has been deleted",
+            Data = users
+        });
     }
 }

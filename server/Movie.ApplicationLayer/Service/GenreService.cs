@@ -49,7 +49,7 @@ public class GenreService : IGenreInterface
     {
         try
         {
-            var existingGenre = await _genre.GetGenreById(updateId);
+            var existingGenre = await _genre.GetGenreById(updateId); //Refactor need use instance insted
             if (existingGenre == null) return null;
 
             existingGenre.GenreTitle = genre.GenreTitle;
