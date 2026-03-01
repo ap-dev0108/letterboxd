@@ -24,11 +24,11 @@ public class RatingService : IRatingInterface
     public async Task<List<Ratings>> GetRatingsByMovies(Guid movieId)
     {
         try{
-            var getMovies = await _filmRepo.GetFilmById(movieId);
-            if(getMovies == null) return null;
+            var getMovies = await _filmRepo.GetFilmById(movieId) ??
+                throw new KeyNotFoundException("Movies cannot be found");
 
-            var getRatings = await _ratingRepo.GetRatingsofMovies(movieId);
-            if (getRatings == null) return null;
+            var getRatings = await _ratingRepo.GetRatingsofMovies(movieId) ??
+                throw new KeyNotFoundException("Ratings cannot be found");
 
             return getRatings;
         }
@@ -43,13 +43,8 @@ public class RatingService : IRatingInterface
         try
         {
             //make a service which get's token data and retrive the id then use it to get users
-            //var users = await _userRepo.
-            var movie = await _filmRepo.GetFilmById(movieId);
-
-            if(movie == null)
-            {
-                throw new Exception("Movie is null");
-            };
+            var movie = await _filmRepo.GetFilmById(movieId) ?? 
+                throw new KeyNotFoundException("Movie cannot be found");
 
             var ratings = new Ratings
             {
@@ -73,8 +68,8 @@ public class RatingService : IRatingInterface
         try
         {
             //can make this thing littel short by handling null check in line 76
-            var movieExists = await _filmRepo.GetFilmById(movieId);
-            if (movieExists == null) throw new Exception("The movie does not exists");   
+            var movieExists = await _filmRepo.GetFilmById(movieId) ?? 
+                throw new KeyNotFoundException("Movie cannot be found");  
 
             var addRatings = new Ratings
             {
@@ -86,9 +81,8 @@ public class RatingService : IRatingInterface
 
             movieExists.AverageRatings = ((movieExists.AverageRatings * (movieExists.TotalRatings - 1)) + rating) / movieExists.TotalRatings;
 
-            await _filmRepo.UpdateFilm(movieExists);
-
             await _ratingRepo.AddRatings(addRatings);
+            await _filmRepo.SaveChangesAsync();
             return addRatings;
         }
         catch (Exception ex)
