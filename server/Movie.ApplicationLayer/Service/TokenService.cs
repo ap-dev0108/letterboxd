@@ -59,7 +59,7 @@ public class TokenService : ITokenService
 
         if(string.IsNullOrEmpty(Secret) || string.IsNullOrEmpty(token.Issuer))
         {
-            throw new Exception("Env was not configured");
+            throw new KeyNotFoundException("Env was not configured");
         }
 
         return new JwtSecurityTokenHandler().WriteToken(token);
