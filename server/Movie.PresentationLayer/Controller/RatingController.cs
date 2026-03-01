@@ -16,58 +16,31 @@ public class RatingController : ControllerBase
     }
 
     [HttpGet("getRatingsByMovie")]
-    public async Task<APIResponse<List<Ratings>>> GetMovieRatings(Guid id)
+    public async Task<IActionResult> GetMovieRatings(Guid id)
     {
-        try
-        {
-            var getMovieRatings = await _ratingService.GetRatingsByMovies(id);
+        var getMovieRatings = await _ratingService.GetRatingsByMovies(id);
 
-            if (getMovieRatings == null) return new ()
-            {
-                Success = false,
-                Message = "Movie Ratings are null",
-                Data = null
-            };
+        if (!getMovieRatings.Any()) return NoContent();
 
-            return new ()
-            {
-                Success = true,
-                Message = "Ratings Fetched",
-                Data = getMovieRatings.ToList()
-            };
-        }
-        catch (Exception ex)
+        return Ok(new APIResponse<List<Ratings>>
         {
-            return new ()
-            {
-                Success = false,
-                Message = $"Controller Exception: {ex.Message}"
-            };
-        }
+            Success = true,
+            Message = "Ratings Fetched",
+            Data = getMovieRatings.ToList()
+        });
     }
 
     [HttpPut("change-ratings")]
-    public async Task<APIResponse<Ratings>> ChangeRatings(Guid movieId, float rating)
+    public async Task<IActionResult> ChangeRatings(Guid movieId, float rating)
     {
-        try
+        var updateRatings = await _ratingService.UpdateMovieRatings(movieId, rating);
+    
+        return Ok(new APIResponse<Ratings>
         {
-            var updateRatings = await _ratingService.UpdateMovieRatings(movieId, rating);
-
-            return new ()
-            {
-                Success = true,
-                Message = "Ratings Updated",
-                Data = updateRatings
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ()
-            {
-                Success = false,
-                Message = $"Controller Exception : {ex.Message}"  
-            };
-        }
+            Success = true,
+            Message = "Ratings Updated",
+            Data = updateRatings
+        });
     }
 
     [HttpPost("add-ratings")]
