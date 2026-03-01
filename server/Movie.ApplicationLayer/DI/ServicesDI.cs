@@ -1,3 +1,5 @@
+using Movie.Application.Helper.Data;
+using Movie.Application.Interface.DataInterface;
 using Movie.Application.Interface.FilmInterface;
 using Movie.Application.Interface.FilmInterface.GenreInterface;
 using Movie.Application.Interface.RatingInterface;
@@ -32,6 +34,9 @@ public static class ServiceDI
 
         services.AddScoped<IRatingInterface, RatingService>();
         services.AddScoped<RatingService>();
+
+        services.AddScoped<IDataHelper, DataHelper>();
+        services.AddScoped<DataHelper>();
         return services;
     }
 }
