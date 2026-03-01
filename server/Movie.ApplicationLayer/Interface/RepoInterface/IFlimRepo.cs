@@ -18,5 +18,5 @@ public interface IFilmRepo
     Task<Film> GetFilmByTitle(string title);
     Task<int> GetRatingsCount(Guid movieId);
     Task<Film> AddMovieDetails(Film film);
-    Task UpdateFilm(Film film);
+    Task SaveChangesAsync();
 }
