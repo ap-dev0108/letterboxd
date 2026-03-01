@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Movie.Application.DTO.UserDTO;
 using Movie.Application.DTO.UserDTO.Login;
+using Movie.Application.Helper.Data;
 using Movie.Application.Interface.RepoInterface.UserRepo;
 using Movie.Application.Interface.TokenInterface;
 using Movie.Application.Interface.UserInterface;
@@ -90,7 +91,6 @@ public class UserService : IUserInterface
         {
             // if (string.IsNullOrEmpty(userId))
             //     throw new KeyNotFoundException("User with this ID cannot be found");
-
             var userData = await _userRepo.GetUserById(userId) ?? 
                 throw new KeyNotFoundException("User with this ID cannot be found");
 
@@ -111,9 +111,9 @@ public class UserService : IUserInterface
         try
         {
             var checkUser = await _userRepo.GetUserById(userID) ??
-                throw new KeyNotFoundException("User with this ID cannot be found");
+                throw new KeyNotFoundException($"UserID with ID '{userID}' could not be found");
 
-            var user = _userRepo.DeleteUser(checkUser);
+            await _userRepo.DeleteUser(checkUser);
             var userDTO = new UserDTO
             {
                 UserName = checkUser.UserName
