@@ -12,5 +12,4 @@ public interface IUserRepo
     Task LoginAsync(User user, string password);
     Task<User> CheckUserExists(string email);
     Task DeleteUser(User user);
-    Task VerifyUser(User user);
 }
