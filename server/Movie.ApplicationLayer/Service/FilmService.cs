@@ -1,6 +1,7 @@
 using System.Linq;
 using Movie.Application.DTO.AddFilm;
 using Movie.Application.DTO.FilmDTO;
+using Movie.Application.DTO.UpdateFilm;
 using Movie.Application.Interface.FilmInterface;
 using Movie.Domain.Entities;
 using Movie.Infrastructure.Repository.FilmRepo;
@@ -62,11 +63,10 @@ public class FilmService : IFilmInterface
     {
         try
         {
-            var checkYear = await _filmRepo.FilterByReleaseYear(year);
-            if (checkYear == null) return null;
+            var checkYear = await _filmRepo.FilterByReleaseYear(year) ??
+                throw new KeyNotFoundException("Movie not found");
 
             return checkYear;
-
         }
 
         catch (Exception ex)
@@ -80,7 +80,8 @@ public class FilmService : IFilmInterface
         try
         {
             var checkMovie = await _filmRepo.GetFilmById(movieId);
-            if (checkMovie == null) throw new Exception("Cannot find the matching movie ID");
+            if (checkMovie == null) 
+                throw new KeyNotFoundException("Cannot find the matching movie ID");
 
             var movie = new Film
             {
@@ -107,7 +108,8 @@ public class FilmService : IFilmInterface
     {
         try
         {
-            var fetchMovieTitle = await _filmRepo.GetFilmByTitle(movie.movieTitle);
+            var fetchMovieTitle = await _filmRepo.GetFilmByTitle(movie.movieTitle) ??
+                throw new KeyNotFoundException("Movie with the title not found");
 
             var addMovie = new Film
             {
@@ -120,7 +122,9 @@ public class FilmService : IFilmInterface
                 TotalRatings = movie.TotalRatings
             };
 
-            var movies = await _filmRepo.AddMovieDetails(addMovie);
+            var movies = await _filmRepo.AddMovieDetails(addMovie) ?? 
+                throw new UnauthorizedAccessException("The movie details entered are invalid");
+                
             return movies;
         } 
         catch (Exception ex)
@@ -133,8 +137,8 @@ public class FilmService : IFilmInterface
     {
         try
         {
-            var getMovie = await _filmRepo.GetFilmById(movieId);
-            if (getMovie == null) return 0;
+            var getMovie = await _filmRepo.GetFilmById(movieId) ?? 
+                throw new KeyNotFoundException("Movie cannot be found");
 
             var getTotalRatings = await _filmRepo.GetRatingsCount(movieId);
             return getTotalRatings;
@@ -144,4 +148,28 @@ public class FilmService : IFilmInterface
             throw new Exception(ex.Message);
         }
     }
+
+    public async Task<Film> UpdateFilm(Guid movieId, UpdateFilmDTO updateFilmDTO)
+    {
+        try
+        {
+            var existingMovie = await _filmRepo.GetFilmById(movieId);
+            if (existingMovie == null) throw new KeyNotFoundException($"Movie with ID: {movieId} does not exist");
+
+            existingMovie.movieTitle = updateFilmDTO.movieTitle;
+            existingMovie.movieDescription = updateFilmDTO.movieDescription;
+            existingMovie.posterUrl = updateFilmDTO.posterUrl;
+            existingMovie.releaseYear = updateFilmDTO.releaseYear;
+            existingMovie.runTime = updateFilmDTO.runTime;
+            existingMovie.AverageRatings = updateFilmDTO.AverageRatings;
+            existingMovie.TotalRatings = updateFilmDTO.TotalRatings;
+
+            await _filmRepo.SaveChangesAsync();
+            return existingMovie;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    } 
 }
