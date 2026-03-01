@@ -9,6 +9,6 @@ public interface IUserInterface
 {
     Task<IdentityResult> RegisterUserAsync(User user, string password);
     Task<string> LoginUserAsync(LoginDTO loginDTO);
-    Task<UserDTO> UserProfile(string Id);
+    Task<UserDTO> UserProfile(string userId);
     Task<UserDTO> DeleteUser(string id);
 }
