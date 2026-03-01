@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Application.DTO.AddFilm;
+using Movie.Application.DTO.UpdateFilm;
 using Movie.Application.Service;
 using Movie.Domain.Entities;
 
@@ -15,6 +17,7 @@ public class FilmController : ControllerBase
         _filmService = filmService;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("/getAllMovies")]
     public async Task<IActionResult> GetFilmsAsync()
     {
@@ -26,81 +29,58 @@ public class FilmController : ControllerBase
         return Ok(getMovies);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("/getMovieData")]
-    public async Task<APIResponse<Film>> GetMovieData(Guid movieId)
+    public async Task<IActionResult> GetMovieData(Guid movieId)
     {
-        try
+        var getMovie = await _filmService.ShowMovieDetails(movieId);
+        return Ok(new APIResponse<Film>
         {
-            var getMovie = await _filmService.ShowMovieDetails(movieId);
-            return new ()
-            {
-                Success = true,
-                Message = "Movie fetched",
-                Data = getMovie
-            };
-        }
-
-        catch (Exception ex)
-        {
-            return new ()
-            {
-                Success = false,
-                Message = $"Controller Exception : {ex.Message}"
-            };
-        }
+            Success = true,
+            Message = "Movie fetched",
+            Data = getMovie
+        });
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("/addMovies")]
-    public async Task<APIResponse<Film>> AddMovies(AddFilmDTO moviesData)
+    public async Task<IActionResult> AddMovies(AddFilmDTO moviesData)
     {
-        try
-        {
-            var movie = await _filmService.AddMovieDetails(moviesData);
+        var movie = await _filmService.AddMovieDetails(moviesData);
 
-            return new ()
-            {
-                Success = true,
-                Message = "Movies added successfully",
-                Data = movie  
-            };
-        }
-        catch (Exception ex)
+        return Ok(new APIResponse<Film>
         {
-            return new ()
-            {
-                Success = false,
-                Message = $"Controller Exception: {ex.Message}"
-            };
-        }
+            Success = true,
+            Message = "Movies added successfully",
+            Data = movie  
+        });
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("getTotalRatings")]
-    public async Task<APIResponse<string>> GetRatingCount(Guid movieId)
+    public async Task<IActionResult> GetRatingCount(Guid movieId)
     {
-        try
-        {
-            var getRatings = await _filmService.GetTotalRatings(movieId);
-            if (getRatings == null) return new ()
-            {
-                Success = false,
-                Message = "Count is null",
-            };
+        var getRatings = await _filmService.GetTotalRatings(movieId);
 
-            return new ()
-            {
-                Success = true,
-                Message = "Rating Count Fetched",
-                Data = $"{getRatings} ratings so far"
-            };
-        }
-        catch (Exception ex)
+        return Ok(new APIResponse<string>
         {
-            return new ()
-            {
-                Success = false,
-                Message = $"Controller Exception: {ex.Message}"
-            };
-        }
+            Success = true,
+            Message = "Rating Count Fetched",
+            Data = $"{getRatings} ratings so far"
+        });
     }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPut("update-movies")]
+    public async Task<IActionResult> UpdateMovies(Guid movieId, UpdateFilmDTO updateFilmDTO)
+    {
 
+        await _filmService.UpdateFilm(movieId, updateFilmDTO);
+        return Ok (new APIResponse<string>
+        {
+            Success = true,
+            Message = "Movie has been updated",
+            Data = $"The movie with the following ID: {movieId} has been updated"
+        });
+    }
 }
