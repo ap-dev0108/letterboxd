@@ -16,18 +16,16 @@ public class RatingRepo : IRatingRepo
 
     public async Task<List<Ratings>> GetRatingsofMovies(Guid movieId)
     {
-        return await _db.Ratings.Where(x => x.MovieId == movieId).ToListAsync();
+        return await _db.Ratings.Where(x => x.MovieId == movieId).AsNoTracking().ToListAsync();
     }
 
     public async Task UpdateRatings(Ratings rating)
     {
         _db.Ratings.Update(rating);
-        _db.SaveChanges();
     }
 
     public async Task AddRatings(Ratings ratings)
     {
         _db.Ratings.Add(ratings);
-        _db.SaveChanges();
     }
 }
