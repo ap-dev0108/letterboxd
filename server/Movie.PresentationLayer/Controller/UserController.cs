@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Application.DTO.UserDTO;
 using Movie.Application.DTO.UserDTO.Login;
+using Movie.Application.Helper.Data;
 using Movie.Application.Service.UserService;
 using Movie.Domain.Entities;
 
@@ -16,10 +17,12 @@ namespace Movie.Presentation.Controller.UserControllers;
 public class UserController : ControllerBase
 {
     private readonly UserService _userServices;
+    private readonly DataHelper _helper;
 
-    public UserController(UserService userService)
+    public UserController(UserService userService, DataHelper helper)
     {
         _userServices = userService;
+        _helper = helper;
     }
 
     [Authorize(Roles = "Admin")]
@@ -86,8 +89,7 @@ public class UserController : ControllerBase
     [HttpGet("user-profile")]
     public async Task<IActionResult> VerifyUser()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("sub");
+        string userId = _helper.GetTokenDetails().userId;
 
         var profile = await _userServices.UserProfile(userId);
 
