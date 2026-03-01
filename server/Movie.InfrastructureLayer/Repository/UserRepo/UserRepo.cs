@@ -22,18 +22,17 @@ public class UserRepo : IUserRepo
 
     public async Task<List<User>> GetAllUserAsync()
     {
-        return await _db.Users.ToListAsync();
+        return await _db.Users.AsNoTracking().ToListAsync();
     }
 
     public async Task<User> GetUserById(string id)
     {
-        return await _db.Users.FirstOrDefaultAsync(f => f.Id == id);
+        return await _db.Users.AsNoTracking().FirstOrDefaultAsync(f => f.Id == id);
     }
 
     public async Task<IdentityResult> RegisterAsync(User user, string password)
     {
-        var registerUser = await _userManager.CreateAsync(user, password);
-        return registerUser;
+        return await _userManager.CreateAsync(user, password);
     }
 
     public async Task LoginAsync(User user, string password)
@@ -43,27 +42,11 @@ public class UserRepo : IUserRepo
 
     public async Task<User> CheckUserExists(string email)
     {
-        try
-        {
-            var userExists = await _userManager.FindByEmailAsync(email);
-            if (userExists == null) return null;
-
-            return userExists;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
+        return await _userManager.FindByEmailAsync(email);
     }
 
     public async Task DeleteUser(User user)
     {
         _db.Users.Remove(user);
-        _db.SaveChanges();
-    }
-
-    public Task VerifyUser(User user)
-    {
-        throw new NotImplementedException();
     }
 }
