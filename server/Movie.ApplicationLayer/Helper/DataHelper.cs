@@ -1,8 +1,9 @@
 using System.Security.Claims;
+using Movie.Application.Interface.DataInterface;
 
 namespace Movie.Application.Helper.Data;
 
-public class DataHelper
+public class DataHelper : IDataHelper
 {
     private readonly IHttpContextAccessor _context;
 
