@@ -20,47 +20,44 @@ public class FilmRepo : IFilmRepo
 
     public async Task<List<Film>> GetFilmsAsync()
     {
-        return await _db.Films.ToListAsync();
+        return await _db.Films.AsNoTracking().ToListAsync();
     }
 
     public async Task<Film> GetFilmById(Guid movieId)
     {
-        return await _db.Films.FirstOrDefaultAsync(f => f.movieId == movieId);
+        return await _db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.movieId == movieId);
     }
 
     public async Task<Film> FilterByGenre(Genre genre)
     {
-        return await _db.Films.FirstOrDefaultAsync(f => f.MovieGenre == genre);
+        return await _db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.MovieGenre == genre);
     }
 
     public async Task<Film> FilterByReleaseYear(string year)
     {
-        return await _db.Films.FirstOrDefaultAsync(f => f.releaseYear == year);
+        return await _db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.releaseYear == year);
     }
 
     public async Task<Film> GetFilmByTitle(string movieTitle)
     {
-        return await _db.Films.FirstOrDefaultAsync(f => f.movieTitle == movieTitle);
+        return await _db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.movieTitle == movieTitle);
     }
 
     public async Task<int> GetRatingsCount(Guid movieId)
     {
-        var getMovies = await _db.Films.FirstOrDefaultAsync(f => f.movieId == movieId);
-        var ratings = getMovies.TotalRatings;
-
-        return ratings;
+        var getMovies = await _db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.movieId == movieId);
+        return getMovies.TotalRatings;
     }
 
     public async Task<Film> AddMovieDetails(Film film)
     {
         await _db.Films.AddAsync(film);
-        await _db.SaveChangesAsync();
         return film;
     }
 
-    public async Task UpdateFilm(Film film)
+    //Method for saving database changes. 
+    public async Task SaveChangesAsync()
     {
-        _db.Films.Update(film);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
     }
 }
