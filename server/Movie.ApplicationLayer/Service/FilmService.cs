@@ -1,6 +1,7 @@
 using System.Linq;
 using Movie.Application.DTO.AddFilm;
 using Movie.Application.DTO.FilmDTO;
+using Movie.Application.DTO.FilmDTO.FilmFilter;
 using Movie.Application.DTO.UpdateFilm;
 using Movie.Application.Interface.FilmInterface;
 using Movie.Domain.Entities;
@@ -44,37 +45,6 @@ public class FilmService : IFilmInterface
             throw new Exception(ex.Message);
         }
     }
-
-    public async Task<Film> FilterByGenre(Genre genre)
-    {
-        try
-        {
-            var filterMovie = await _filmRepo.FilterByGenre(genre);
-            return filterMovie;
-        }
-
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
-    }
-
-    public async Task<Film> FilterByReleaseYear(string year)
-    {
-        try
-        {
-            var checkYear = await _filmRepo.FilterByReleaseYear(year) ??
-                throw new KeyNotFoundException("Movie not found");
-
-            return checkYear;
-        }
-
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
-    }
-
     public async Task<Film> ShowMovieDetails(Guid movieId)
     {
         try
@@ -172,4 +142,51 @@ public class FilmService : IFilmInterface
             throw new Exception(ex.Message);
         }
     } 
+
+    public async Task<List<Film>> GetFilmFilteredAsync(FilmFilterDto filmFilterDto)
+    {
+        try
+        {
+            var movies = await _filmRepo.GetFilmFilteredAsync(filmFilterDto);
+            return movies;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public async Task<List<Film>> SearchMovie(string title)
+    {
+        try
+        {
+            if(string.IsNullOrWhiteSpace(title))
+            {
+                return new List<Film>();
+            }
+
+            title = title.Trim().ToLower();
+            return await _filmRepo.GetFilmByTitle(title);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public async Task DeleteMovie(Guid movieId)
+    {
+        try
+        {
+            var movie = await _filmRepo.GetFilmById(movieId);
+            if (movie == null) throw new KeyNotFoundException($"Movie with ID: {movieId} cannot be found");
+
+            await _filmRepo.DeleteMovie(movie);
+            await _filmRepo.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
 }
