@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using Movie.Domain.Entities.Reviews;
 
 namespace Movie.Domain.Entities;
 public class Film
@@ -21,4 +22,5 @@ public class Film
     public int TotalRatings {get;set;}
     public ICollection<Genre> MovieGenre {get;set;} = new List<Genre>();
     public ICollection<Ratings> MovieRatings {get; set;} = new List<Ratings>();
+    public ICollection<Review> MovieReviews {get; set;} = new List<Review>();
 }
