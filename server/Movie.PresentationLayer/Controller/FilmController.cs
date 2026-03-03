@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Application.DTO.AddFilm;
+using Movie.Application.DTO.FilmDTO.FilmFilter;
 using Movie.Application.DTO.UpdateFilm;
 using Movie.Application.Service;
 using Movie.Domain.Entities;
@@ -81,6 +82,42 @@ public class FilmController : ControllerBase
             Success = true,
             Message = "Movie has been updated",
             Data = $"The movie with the following ID: {movieId} has been updated"
+        });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("filter-movies")]
+    public async Task<IActionResult> GetFilteredMovies([FromQuery] FilmFilterDto filter)
+    {
+        var movies = await _filmService.GetFilmFilteredAsync(filter);
+
+        if (movies == null || !movies.Any())
+        {
+            return Ok(new APIResponse<List<Film>>
+            {
+                Success = true,
+                Message = "No movies matched the given filters",
+                Data = new List<Film>()
+            });
+        }
+
+        return Ok(new APIResponse<List<Film>>
+        {
+            Success = true,
+            Message = "Filtered movies fetched successfully",
+            Data = movies
+        });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("delete-movies")]
+    public async Task<IActionResult> DeleteMovie(Guid movieId)
+    {
+        await _filmService.DeleteMovie(movieId);
+        return Ok(new APIResponse<string>
+        {
+            Success = true,
+            Message = $"Movie with ID: {movieId}has been deleted successfully"
         });
     }
 }
